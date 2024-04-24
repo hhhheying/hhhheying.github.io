@@ -1,0 +1,938 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.png">
+  <link rel="icon" href="/img/avatar.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="hy">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="wav音频格式解析  本文参考： WAVE文件格式解析 - Tocy - 博客园 (cnblogs.com) Wave File Specifications (mcgill.ca)  简介 WAV文件是一种常见的音频文件格式，其结构遵循RIFF（Resource Interchange File Format）规范，这种规范来源于微软和IBM，我们可以在参考博客中找到相关规范文档。 WAV文件是">
+  
+  
+  
+  <title>wav音频格式解析 - hyblog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"hhhheying.github.io","root":"/","version":"1.9.7","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 30vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>hyblog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">wav音频格式解析</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-04-19 00:05" pubdate>
+          2024年4月19日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">wav音频格式解析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1>wav音频格式解析</h1>
+<blockquote>
+<p>本文参考：<br>
+<a target="_blank" rel="noopener" href="https://www.cnblogs.com/tocy/p/WAV_file-format.html">WAVE文件格式解析 - Tocy - 博客园 (cnblogs.com)</a><br>
+<a target="_blank" rel="noopener" href="https://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html">Wave File Specifications (mcgill.ca)</a></p>
+</blockquote>
+<h2 id="简介">简介</h2>
+<p>WAV文件是一种常见的音频文件格式，其结构遵循RIFF（Resource Interchange File Format）规范，这种规范来源于微软和IBM，我们可以在参考博客中找到相关规范文档。</p>
+<p>WAV文件是由<code>chunk</code>组成的，这些chunk通常由ckID、cksize、chunk data组成。</p>
+<h2 id="文件结构">文件结构</h2>
+<p>首先是很经典的结构图：<br>
+<img src="/imgs/2024-04-17/DFSgpVSG0T0GXEHd.png" srcset="/img/loading.gif" lazyload alt="本图来源：csdn"><img src="https://img-blog.csdnimg.cn/img_convert/f07387fc9cceaee9000a829dedb813db.gif" srcset="/img/loading.gif" lazyload alt=""></p>
+<p>这张图中有很多值得注意的地方：</p>
+<ul>
+<li>在最左边表明了当前的字段的编码属于小端模式还是大端模式。</li>
+<li>图中以不同的颜色区分了不同的<code>chunk</code>，而其中的<code>subchunk</code>表明了这些chunk之间的关系。</li>
+<li>每个<code>chunk</code>都有其承载的信息内容，这些信息的组织也有相关规范。</li>
+</ul>
+<p>接下来分别分析其中的chunk</p>
+<blockquote>
+<p>本文中分析hex文件的截图来源于<a target="_blank" rel="noopener" href="https://hexed.it/">HexEd.it — 基于浏览器的十六进制编辑器</a></p>
+</blockquote>
+<h3 id="RIFF">RIFF</h3>
+<p>RIFF字段是每个WAV文件都有的部分</p>
+<table>
+<thead>
+<tr>
+<th>field</th>
+<th>Length</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ckid</td>
+<td>4</td>
+<td>“RIFF”</td>
+</tr>
+<tr>
+<td>cksize</td>
+<td>4</td>
+<td>4+n</td>
+</tr>
+<tr>
+<td>WAVEID</td>
+<td>4</td>
+<td>“WAVE”</td>
+</tr>
+<tr>
+<td>WAVE chunks</td>
+<td>n</td>
+<td>包括格式信息和数据块</td>
+</tr>
+</tbody>
+</table>
+<p>这张表列出了RIFFchunk的结构，从中可知：</p>
+<ul>
+<li>其他的信息都在<code>WAVE chunk</code>中，即开始的图中的<code>subchunk</code>部分。</li>
+<li>同时，我们也知道这里的4+n指的是WAVEID的4字节和WAVE chunks的n字节，不包括ckid和cksize。</li>
+<li>RIFF和WAVE属于固定的内容，是不会变的。</li>
+</ul>
+<p><img src="/imgs/2024-04-17/saDZL2nZz5lPxLYk.png" srcset="/img/loading.gif" lazyload alt="上图是对一个wav的文件放入16进制编辑器分析的截图，我们可以很容易看到转化为ASCII的RIFF和WAV"><br>
+上图是对一个wav的文件放入16进制编辑器分析的截图，我们可以很容易看到转化为ASCII的RIFF和WAV字段。</p>
+<h3 id="fmt-chunk">fmt chunk</h3>
+<p><code>fmt</code>块是一个可选的块，但是其中包含很多重要的信息，包括channels、sample pre seconds、bits per sample等，所以一般的文件都会有这个块，没有这部分信息很多的播放器会无法解析播放。</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Length</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ckID</td>
+<td>4</td>
+<td>&quot;fmt &quot;</td>
+</tr>
+<tr>
+<td>cksize</td>
+<td>4</td>
+<td>16/18/40</td>
+</tr>
+<tr>
+<td>wFormatTag</td>
+<td>2</td>
+<td>Format code 对应不同的音频编码</td>
+</tr>
+<tr>
+<td>nChannels</td>
+<td>4</td>
+<td>声道数</td>
+</tr>
+<tr>
+<td>nSamplePreSecond</td>
+<td>4</td>
+<td>采样率</td>
+</tr>
+<tr>
+<td>nAvgBytesPerSec</td>
+<td>4</td>
+<td>音频码率</td>
+</tr>
+<tr>
+<td>nBlockAlign</td>
+<td>2</td>
+<td>音频数据块大小</td>
+</tr>
+<tr>
+<td>wBitsPerSample</td>
+<td>2</td>
+<td>量化位数，比如8bit、16bit</td>
+</tr>
+<tr>
+<td><code>cbSize</code></td>
+<td>2</td>
+<td>extension扩展块的大小(0 or 22)</td>
+</tr>
+<tr>
+<td><code>wValidBitsPerSample</code></td>
+<td>2</td>
+<td>有效位数</td>
+</tr>
+<tr>
+<td><code>dwChannelMask</code></td>
+<td>4</td>
+<td>声道掩码，比如左声道、右声道</td>
+</tr>
+<tr>
+<td><code>SubFormat</code></td>
+<td>16</td>
+<td>GUID，数据格式码</td>
+</tr>
+</tbody>
+</table>
+<p>该表格中表示了许多重要信息，我们要注意以下几点：</p>
+<ul>
+<li><code>fmt </code>这个字段占4个字节，最后一个是空。</li>
+<li>当<code>cksize</code>是16是即为没有扩展部分，为18时，对应的<code>cbsize</code>为0，为40时，<code>cbsize</code>为22。</li>
+<li>format code对应的音频编码为下表</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Format Code</th>
+<th>PreProcessor Symbol</th>
+<th>Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0x0001</td>
+<td>WAVE_FORMAT_PCM</td>
+<td>PCM</td>
+</tr>
+<tr>
+<td>0x0003</td>
+<td>WAVE_FORMAT_IEEE_FLOAT</td>
+<td>IEEE float</td>
+</tr>
+<tr>
+<td>0x0006</td>
+<td>WAVE_FORMAT_ALAW</td>
+<td>8-bit ITU-T G.711 A-law</td>
+</tr>
+<tr>
+<td>0x0007</td>
+<td>WAVE_FORMAT_MULAW</td>
+<td>8-bit ITU-T G.711 µ-law</td>
+</tr>
+<tr>
+<td>0xFFFE</td>
+<td>WAVE_FORMAT_EXTENSIBLE</td>
+<td>Determined by <code>SubFormat</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>以下内容由AI翻译自第二篇参考文章，我对部分表达做了修改</p>
+</blockquote>
+<h4 id="PCM格式">PCM格式</h4>
+<p>格式块的第一部分用于描述PCM（脉冲编码调制）数据。</p>
+<ul>
+<li>对于PCM数据，文件头中的格式块<code>fmt </code>声明了每个样本中的比特数/样本（wBitsPerSample）。最初的文档规定，每个样本的比特数应向上取整到下一个8比特的倍数。这个向上取整的值就是容器大小。这种信息是多余的，因为每个样本的容器大小（以字节为单位）也可以通过区块大小除以通道数（nBlockAlign / nChannels）来确定。
+<ul>
+<li>这种冗余已经被用来定义新格式。例如，Cool Edit使用了一个格式，它声明了一个24比特的样本大小，以及一个从区块大小和通道数确定的4字节（32比特）的容器大小。通过这种组合，数据实际上是以32位IEEE浮点数存储的。然而，标准化（全量程223）与标准浮点格式不同。</li>
+</ul>
+</li>
+<li>PCM数据是二进制补码，除了1-8比特的分辨率，它们被表示为偏移二进制。</li>
+</ul>
+<h4 id="非PCM格式">非PCM格式</h4>
+<p>扩展格式块用于非PCM数据。<code>cbSize</code>字段给出了扩展的大小。</p>
+<ul>
+<li>对于除PCM以外的所有格式，格式块必须有一个扩展部分。扩展可以是零长度的，但大小字段（值为0）必须存在。</li>
+<li>对于浮点数据，全量程是1。比特/样本通常为32或64。</li>
+<li>对于对数PCM格式（μ-law和A-law），比特/样本字段（wBitsPerSample）应设置为8比特。</li>
+<li>非PCM格式必须有一个fact块。</li>
+</ul>
+<h4 id="可扩展格式">可扩展格式</h4>
+<p><code>WAVE_FORMAT_EXTENSIBLE</code>格式代码表明格式块有一个扩展。扩展有一个字段，它声明了每个样本的有效比特数（wValidBitsPerSample）。另一个字段（dwChannelMask）包含位，这些位指示从通道到扬声器位置的映射。最后一个字段（SubFormat）是一个16字节的全局唯一标识符（GUID）。</p>
+<ul>
+<li>使用<code>WAVE_FORMAT_EXTENSIBLE</code>格式时，原始的比特/样本字段（wBitsPerSample）必须与容器大小匹配（8 * nBlockAlign / nChannels）。这意味着wBitsPerSample必须是8的倍数。现在通过wValidBitsPerSample指定容器大小内的减少精度。</li>
+<li>有效比特数（wValidBitsPerSample）仅用于信息。数据在容器大小的精度中被正确表示。有效比特数可以是1到容器大小的比特中的任何值。</li>
+<li>扬声器位置掩码使用18位，每位对应一个扬声器位置（例如，前置左或顶部后右），以指示通道到扬声器的映射。这个字段是信息性的。全零字段表明通道按照顺序映射到输出：第一个通道到第一个输出，第二个通道到第二个输出，等等。</li>
+<li>GUID的前两个字节形成指定数据格式代码的子代码，例如		<code>WAVE_FORMAT_PCM</code>。其余的14个字节包含一个固定字符串，<code>\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71</code>。</li>
+</ul>
+<p>当出现以下情况时，应使用<code>WAVE_FORMAT_EXTENSIBLE</code>格式：</p>
+<ul>
+<li>PCM数据的比特/样本超过16比特。</li>
+<li>通道数超过2。</li>
+<li>实际的比特/样本数不等于容器大小。</li>
+<li>需要指定从通道到扬声器的映射。</li>
+</ul>
+<h3 id="fact-chunk">fact chunk</h3>
+<p>fact是一个可选块，用于记录一些事实信息。所有非pcm编码都必须有fact chunk。Fact块对于所有新的WAVE格式都是必需的，但是对于标准的<code>WAVE_FORMAT_PCM</code>文件则不是必需的。<br>
+其基本结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Length</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ckID</td>
+<td>4</td>
+<td>“fact”</td>
+</tr>
+<tr>
+<td>cksize</td>
+<td>4</td>
+<td>块大小：最小为4</td>
+</tr>
+<tr>
+<td>dwSampleLength</td>
+<td>4</td>
+<td>音频数据的样本大小，以字节为单位</td>
+</tr>
+</tbody>
+</table>
+<h3 id="data-chunk">data chunk</h3>
+<p>data chunk中包含音频的数据。<br>
+其结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Length</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ckID</td>
+<td>4</td>
+<td>“data”</td>
+</tr>
+<tr>
+<td>cksize</td>
+<td>4</td>
+<td>数据大小 n</td>
+</tr>
+<tr>
+<td>sampled data</td>
+<td>n</td>
+<td>数据</td>
+</tr>
+<tr>
+<td>pad byte</td>
+<td>0 or 1</td>
+<td>如果n是奇数，进行填充</td>
+</tr>
+</tbody>
+</table>
+<p>一般来说，常见的音频编码是PCM。在这里简单介绍PCM格式：PCM（Pulse Code Modulation）是一种模拟信号的数字化方法，ADC（Analog to Digital Converter）芯片是实现这一方法的器件。 PCM编码就是这个方法中的数字音频编码方式。PCM编码是最原始的音频编码，其他编码都是在它基础上再次编码和压缩的。</p>
+<p>以下是pcm编码的格式：<br>
+<img src="/imgs/2024-04-18/3BaQQaFPhJp6iIMv.png" srcset="/img/loading.gif" lazyload alt="图片来源：csdn"><img src="https://img-blog.csdnimg.cn/ac78141e0a514f859acbf592f7bfb9e0.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAUHJvWXVhbjI4,size_20,color_FFFFFF,t_70,g_se,x_16" srcset="/img/loading.gif" lazyload alt=""></p>
+<h3 id="其他chunk">其他chunk</h3>
+<ul>
+<li><code>JUNK</code>是用于对齐的填充段。</li>
+<li><code>bext</code>是由一些广播软件生成的可选段，用于存储元数据信息，如音频文件的标题、艺术家、版权信息等。</li>
+<li><code>LIST </code>是一个特殊的块，用于包含其他子块的列表。标识符为&quot;LIST&quot;，后面跟着一个子块类型的标识符，如&quot;INFO&quot;（用于存储元数据信息）。</li>
+<li><code>INFO Chunk</code>是<code>LIST</code>块的一个子块，用于存储元数据信息，如音频文件的标题、艺术家、版权信息等。标识符为&quot;INFO&quot;。</li>
+<li><code>Cue Point</code>这是一个可选的chunk，它包含了关于音频数据的标记信息，如标记点的位置、名称等。这些信息通常用于在音频播放器中添加书签或跳转到特定位置。</li>
+<li><code>slnt</code> 通常用于存储音频文件的缩略图或预览图像，它通常出现在音频文件的元数据中，而不是音频数据本身。</li>
+<li>其他的块在参考博客的链接文档中有详细介绍</li>
+</ul>
+<h2 id="例子">例子</h2>
+<p>在我的两篇参考博客中都有例子，可以直接参考对照。另附一个博客中的例子，有图和直接的16进制数据对照：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/muxue/archive/2010/04/19/1715715.html">WAVE 文件格式分析 - 唐风思琪 - 博客园 (cnblogs.com)</a></p>
+<h2 id="总结">总结</h2>
+<ul>
+<li>如果我们想要实现一个wav文件的播放器，那么我们需要关心的chunk包括<code>RIFF</code>、<code>fmt </code>和<code>data</code>，其他的块中的内容不是必须的。</li>
+<li>这些块的结构是有规律的：4个字节的标识符以及紧接着的4个字节的chunk大小。这一规律使得我们尽管不完全知道wav的chunk种类也能找到我们需要的信息：保留自己需要的块，跳过不认识的块。</li>
+<li>在<code>fmt </code>中包含了解析data的重要参数，我们要比较了解这一部分内容。本文也花了不少篇幅在这部分，例子中的大部分也是在分析fmt chunk。</li>
+<li>在我查找资料的过程中，我发现了这个项目：<a target="_blank" rel="noopener" href="https://github.com/jazzlost/WavParser">jazzlost/WavParser: Wave Formate File Parser (github.com)</a>。这个项目用c++实现了wav的解析，可以直接运行，可以作为参考学习。</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E9%9F%B3%E9%A2%91%E5%BC%80%E5%8F%91/" class="print-no-link">#音频开发</a>
+      
+        <a href="/tags/%E6%80%BB%E7%BB%93/" class="print-no-link">#总结</a>
+      
+        <a href="/tags/%E8%AF%BB%E8%AF%B4%E6%98%8E%E4%B9%A6/" class="print-no-link">#读说明书</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>wav音频格式解析</div>
+      <div>http://hhhheying.github.io/2024/04/19/wav音频格式解析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>hy</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年4月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.2/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
