@@ -1,0 +1,72 @@
+baseURL: "https://hhhheying.github.io/"
+languageCode: "zh-cn"
+title: "hyblog"
+theme: "PaperMod"
+paginate: 10
+
+enableRobotsTXT: true
+buildDrafts: false
+buildFuture: false
+buildExpired: false
+
+minify:
+  disableXML: true
+  minifyOutput: true
+
+params:
+  env: production
+  title: "hyblog"
+  description: "记录与分享"
+  keywords: [Blog, Hugo]
+  author: "hy"
+  defaultTheme: auto
+  disableThemeToggle: false
+  ShowReadingTime: true
+  ShowWordCount: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  ShowShareButtons: false
+  ShowPostNavLinks: true
+  ShowRssButtonInSectionTermList: true
+  ShowAllPagesInArchive: true
+  UseHugoToc: false
+  ShowToc: true
+  TocOpen: true
+  comments: false
+  hidemeta: false
+  hideSummary: false
+  disableSpecial1stPost: false
+  disableScrollToTop: false
+  homeInfoParams:
+    Title: "你好"
+    Content: "记录与分享"
+  label:
+    text: "hyblog"
+  editPost:
+    URL: "https://github.com/hhhheying/hhhheying.github.io/tree/main/content"
+    Text: "编辑这篇文章"
+    appendFilePath: true
+
+menu:
+  main:
+    - identifier: posts
+      name: 文章
+      url: /posts/
+      weight: 10
+    - identifier: categories
+      name: 分类
+      url: /categories/
+      weight: 20
+    - identifier: tags
+      name: 标签
+      url: /tags/
+      weight: 30
+    - identifier: archives
+      name: 归档
+      url: /archives/
+      weight: 40
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
