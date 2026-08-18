@@ -33,6 +33,7 @@ params:
   ShowToc: true
   TocOpen: true
   comments: false
+  math: true
   hidemeta: false
   hideSummary: false
   disableSpecial1stPost: false
